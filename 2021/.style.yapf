@@ -1,0 +1,30 @@
+[style]
+# Align closing bracket with visual indentation
+ALIGN_CLOSING_BRACKET_WITH_VISUAL_INDENT = True
+# Allow dictionary keys to exist on multiple lines.
+ALLOW_MULTILINE_DICTIONARY_KEYS = True
+# Let spacing indicate operator precedence
+ARITHMETIC_PRECEDENCE_INDICATION = True
+# Insert a blank line before a def or class immediately nested within another def or class
+BLANK_LINE_BEFORE_NESTED_CLASS_OR_DEF = True
+# Sets the number of desired blank lines surrounding top-level function and class definitions
+BLANK_LINES_AROUND_TOP_LEVEL_DEFINITION = 2
+# Sets the number of desired blank lines between top-level imports and variable definitions. Useful for compatibility with tools like isort.
+BLANK_LINES_BETWEEN_TOP_LEVEL_IMPORTS_AND_VARIABLES = 2
+# Do not split consecutive brackets. Only relevant when DEDENT_CLOSING_BRACKETS or INDENT_CLOSING_BRACKETS is set
+COALESCE_BRACKETS = True
+# The column limit (or max line-length)
+COLUMN_LIMIT = 88
+# Put closing brackets on a separate line, dedented, if the bracketed expression can't fit in a single line
+DEDENT_CLOSING_BRACKETS = True
+# Place each dictionary entry onto its own line
+EACH_DICT_ENTRY_ON_SEPARATE_LINE = True
+# Respect EACH_DICT_ENTRY_ON_SEPARATE_LINE even if the line is shorter than COLUMN_LIMIT
+FORCE_MULTILINE_DICT = False
+# Set to True to prefer indented blank lines rather than empty
+INDENT_BLANK_LINES = False
+# The number of spaces required before a trailing comment
+SPACES_BEFORE_COMMENT = 3, 15
+# For list comprehensions and generator expressions with multiple clauses (e.g multiple for calls, if filter expressions) and which need to be reflowed, split each clause onto its own line
+SPLIT_COMPLEX_COMPREHENSION = True
+USE_TABS = False
