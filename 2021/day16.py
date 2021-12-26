@@ -9,16 +9,18 @@ class Parser:
     _raw: str
     base: str = ''
     packets: list = field(default_factory=list)
+    version_sum: int = 0
 
     def __post_init__(self):
         self.base = self._raw
-        self.parse_packets()
+        self.run()
 
     def get_header(self):
-        version = self.base[:3]
+        version = int(self.base[:3], 2)
+        self.version_sum += version
         t_id = self.base[3:6]
         self.base = self.base[6:]
-        return Header(int(version, 2), int(t_id, 2))
+        return Header(version, int(t_id, 2))
 
     def parse_literal(self):
         result = ''
@@ -35,14 +37,15 @@ class Parser:
         length = int(self.base[:15], 2)
         tmp = self.base[15:length + 15]
         self.base = self.base[length + 15:]
-        return Parser(tmp).packets
+        parser = Parser(tmp)
+        self.version_sum += parser.version_sum
+        return parser.packets
 
     def parse_type_1(self):
         # Next number of 11 bits are sub-packets
         length = int(self.base[:11], 2)
-        tmp = self.base[11:(11*length) + 11]
-        self.base = self.base[(11*length) + 11:]
-        return Parser(tmp).packets
+        self.base = self.base[11:]
+        return [self.parse_packets() for _ in range(length)]
 
     def parse_operator(self):
         l_id = self.base[0]
@@ -56,16 +59,16 @@ class Parser:
         return packets
 
     def parse_packets(self):
+        header = self.get_header()
+        if header.t_id == 4:
+            return Packet(header, self.parse_literal())
+        return Packet(header, None, self.parse_operator())
+
+    def run(self):
         while self.base:
             if len(self.base) < 8:
                 break
-            header = self.get_header()
-            if header.t_id == 4:
-                d = self.parse_literal()
-                self.packets.append(Packet(header, d))
-            else:
-                packets = self.parse_operator()
-                self.packets.append(Packet(header, None, packets))
+            self.packets.append(self.parse_packets())
 
 
 @dataclass(slots=True)
@@ -81,6 +84,14 @@ class Packet:
     subpackets: list = field(default_factory=list)
 
 
+def flatten(container):
+    for i in container:
+        if isinstance(i, (list, tuple)):
+            yield from flatten(i)
+        else:
+            yield i
+
+
 def get_data(filename):
     with open(filename, 'r', encoding='utf-8') as f:
         digit = f.read().strip()
@@ -91,9 +102,8 @@ def get_data(filename):
 def main():
     data = get_data('day16.txt')
     parser = Parser(data)
-    # packets = parse_packets(data)
-    # print(parser._raw)
     print(parser.packets)
+    print(parser.version_sum)
 
 
 if __name__ == "__main__":
