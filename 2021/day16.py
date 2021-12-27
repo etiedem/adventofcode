@@ -1,5 +1,6 @@
 from copy import copy
 from dataclasses import dataclass, field
+from functools import reduce
 
 from rich import print
 
@@ -62,7 +63,25 @@ class Parser:
         header = self.get_header()
         if header.t_id == 4:
             return Packet(header, self.parse_literal())
-        return Packet(header, None, self.parse_operator())
+
+        packets = self.parse_operator()
+        match header.t_id:
+            case 0:
+                d = sum(x.data for x in packets)
+            case 1:
+                d = reduce(lambda x, y: x * y.data, packets, 1)
+            case 2:
+                d = min(x.data for x in packets)
+            case 3:
+                d = max(x.data for x in packets)
+            case 5:
+                d = 1 if packets[0].data > packets[1].data else 0
+            case 6:
+                d = 1 if packets[0].data < packets[1].data else 0
+            case 7:
+                d = 1 if packets[0].data == packets[1].data else 0
+
+        return Packet(header, d, packets)
 
     def run(self):
         while self.base:
@@ -104,6 +123,7 @@ def main():
     parser = Parser(data)
     print(parser.packets)
     print(parser.version_sum)
+    print(parser.packets[0].data)
 
 
 if __name__ == "__main__":
