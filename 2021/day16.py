@@ -80,6 +80,8 @@ class Parser:
                 d = 1 if packets[0].data < packets[1].data else 0
             case 7:
                 d = 1 if packets[0].data == packets[1].data else 0
+            case _:
+                raise ValueError
 
         return Packet(header, d, packets)
 
