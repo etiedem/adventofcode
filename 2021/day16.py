@@ -47,6 +47,7 @@ class Parser:
         return [self.parse_packets() for _ in range(length)]
 
     def parse_operator(self):
+        # Length ID
         l_id = self.base[0]
         self.base = self.base[1:]
         match l_id:
