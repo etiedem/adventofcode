@@ -35,11 +35,10 @@ class Parser:
     def parse_type_0(self):
         # Next 15 bits are sub-packets
         length = int(self.base[:15], 2)
-        tmp = self.base[15:length + 15]
+        subparser = Parser(self.base[15:length + 15])
         self.base = self.base[length + 15:]
-        parser = Parser(tmp)
-        self.version_sum += parser.version_sum
-        return parser.packets
+        self.version_sum += subparser.version_sum
+        return subparser.packets
 
     def parse_type_1(self):
         # Next number of 11 bits are sub-packets
@@ -50,12 +49,13 @@ class Parser:
     def parse_operator(self):
         l_id = self.base[0]
         self.base = self.base[1:]
-        if l_id == '0':
-            packets = self.parse_type_0()
-        elif l_id == '1':
-            packets = self.parse_type_1()
-        else:
-            raise ValueError
+        match l_id:
+            case '0':
+                packets = self.parse_type_0()
+            case '1':
+                packets = self.parse_type_1()
+            case _:
+                raise ValueError
         return packets
 
     def parse_packets(self):
