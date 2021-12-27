@@ -105,14 +105,6 @@ class Packet:
     subpackets: list = field(default_factory=list)
 
 
-def flatten(container):
-    for i in container:
-        if isinstance(i, (list, tuple)):
-            yield from flatten(i)
-        else:
-            yield i
-
-
 def get_data(filename):
     with open(filename, 'r', encoding='utf-8') as f:
         digit = f.read().strip()
