@@ -116,8 +116,8 @@ def main():
     data = get_data('day16.txt')
     parser = Parser(data)
     print(parser.packets)
-    print(parser.version_sum)
-    print(parser.packets[0].data)
+    print(f'PART 1: {parser.version_sum}')
+    print(f'PART 2: {parser.packets[0].data}')
 
 
 if __name__ == "__main__":
