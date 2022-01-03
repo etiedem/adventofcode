@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from functools import reduce
+from typing import List
 
 from rich import print
 
@@ -11,10 +12,10 @@ class Node:
     value: int
 
 
-@dataclass(slots=True)
+@dataclass
 class Basin:
     base: Node
-    basin: list[Node] = field(default_factory=list)
+    basin: List[Node] = field(default_factory=list)
 
     def __lt__(self, other):
         return len(self.basin) < len(other.basin)
