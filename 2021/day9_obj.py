@@ -19,21 +19,57 @@ class Basin:
     def __lt__(self, other):
         return len(self.basin) < len(other.basin)
 
-    def _inside(self, x, y):
-        return any(node.x == x and node.y == y for node in self.basin)
+    def _inside(self, x, y, data):
+        if (y > len(data) - 1 or y < 0 or x > len(data[0]) - 1 or x < 0):
+            return False
+        if (data[y][x] == 9):
+            return False
+        return not any(node.x == x and node.y == y for node in self.basin)
 
-    def _fill(self, x, y, data):
-        if data[y][x] == 9 or self._inside(x, y):
-            return
-
-        self.basin.append(Node(x, y, data[y][x]))
-        self._fill(x, y + 1, data) if y + 1 < len(data) else None
-        self._fill(x, y - 1, data) if y > 0 else None
-        self._fill(x + 1, y, data) if x + 1 < len(data[0]) else None
-        self._fill(x - 1, y, data) if x > 0 else None
-
+    #### SCAN FILL ############
     def fill(self, data):
-        self._fill(self.base.x, self.base.y, data)
+        Q = [(self.base.x, self.base.y)]
+
+        while Q:
+            x, y = Q.pop()
+            lx = x
+            while self._inside(lx - 1, y, data):
+                self.basin.append(Node(lx - 1, y, data[y][lx - 1]))
+                lx -= 1
+            while self._inside(x, y, data):
+                self.basin.append(Node(x, y, data[y][x]))
+                x += 1
+            self._scan(lx, x, y + 1, Q, data)
+            self._scan(lx, x, y - 1, Q, data)
+
+    def _scan(self, lx, rx, y, Q, data):
+        added = False
+        for x in range(lx, rx):
+            if not self._inside(x, y, data):
+                added = False
+            elif not added:
+                Q.append((x, y))
+                added = True
+
+    #### END SCAN FILL #########
+
+    #### END FLOOD FILL ########
+    # def _inside(self, x, y):
+    #     return any(node.x == x and node.y == y for node in self.basin)
+
+    # def _fill(self, x, y, data):
+    #     if data[y][x] == 9 or self._inside(x, y):
+    #         return
+
+    #     self.basin.append(Node(x, y, data[y][x]))
+    #     self._fill(x, y + 1, data) if y + 1 < len(data) else None
+    #     self._fill(x, y - 1, data) if y > 0 else None
+    #     self._fill(x + 1, y, data) if x + 1 < len(data[0]) else None
+    #     self._fill(x - 1, y, data) if x > 0 else None
+
+    # def fill(self, data):
+    #     self._fill(self.base.x, self.base.y, data)
+    #### END FLOOD FILL ########
 
     def show(self):
         x1 = min(node.x for node in self.basin)
@@ -84,6 +120,9 @@ def main():
     largest = sorted(result, reverse=True)[:3]
     answer = reduce(lambda x, y: x * len(y.basin), largest, 1)
     print(answer)
+
+    for l in largest:
+        l.show()
 
 
 if __name__ == "__main__":
