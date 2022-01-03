@@ -2,13 +2,14 @@ import heapq
 from collections import defaultdict
 from copy import deepcopy
 from dataclasses import dataclass, field
+from typing import List
 
 from rich import print
 from rich.console import Console
 from rich.text import Text
 
 
-@dataclass(slots=True)
+@dataclass
 class Node:
     x: int
     y: int
@@ -22,10 +23,10 @@ class Node:
         return hash((self.x, self.y))
 
 
-@dataclass(slots=True)
+@dataclass
 class Graph:
-    _base: list[list[int]]
-    graph: list[list[Node]] = field(default_factory=list)
+    _base: List[List[int]]
+    graph: List[List[Node]] = field(default_factory=list)
 
     def __post_init__(self):
         self.graph = [[Node(x, y, cost)
