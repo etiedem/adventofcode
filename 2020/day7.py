@@ -32,23 +32,15 @@ def check_bag(bag_hash, start, end):
             return True
 
 
-def bag_count(bag_hash, start, count=0):
-    print(start)
+def bag_count(bag_hash, start):
+    count = 0
     if not bag_hash.get(start):
-        return count + 1
-    count += sum(bag_hash.get(start).values())
-    print(count)
+        return count
+
     for k in bag_hash.get(start):
-        count += bag_count(bag_hash, k, count)
-    # print(count + sum(bag_hash.get(start).values()))
+        count += bag_hash.get(start).get(k)
+        count += bag_hash.get(start).get(k) * bag_count(bag_hash, k)
     return count
-
-    # if not bag_hash.get(start):
-    #     return count
-
-    # for k in bag_hash.get(start):
-    #     count += bag_count(bag_hash, k, count)
-    # return count + sum(bag_hash.get(start).values())
 
 
 def main():
