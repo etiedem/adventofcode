@@ -9,24 +9,27 @@ def get_data(filename):
 
 
 def part_1(data):
-    count = 0
+    count = pos = 0
     seen = set()
-    pos = 0
-    end = len(data)
-    while pos not in seen and pos < end:
-        current = data[pos]
+
+    while pos not in seen:
+        if pos >= len(data):
+            return count, True
         seen.add(pos)
-        if current[0] == 'nop':
-            pos += 1
-        elif current[0] == 'acc':
-            pos += 1
-            count += int(current[1])
-        elif current[0] == 'jmp':
-            if current[1][0] == '+':
-                pos += int(current[1][1:])
-            else:
-                pos -= int(current[1][1:])
-    return count, pos >= end
+        match data[pos][0]:
+            case 'nop':
+                pos += 1
+            case 'acc':
+                count += int(data[pos][1])
+                pos += 1
+            case 'jmp':
+                match data[pos][1][0]:
+                    case '+':
+                        pos += int(data[pos][1][1:])
+                    case '-':
+                        pos -= int(data[pos][1][1:])
+
+    return count, False
 
 
 def part_2(data):
@@ -34,15 +37,15 @@ def part_2(data):
         if data[idx][0] not in ('nop', 'jmp'):
             continue
 
-        current = deepcopy(data)
+        test = deepcopy(data)
         if data[idx][0] == 'nop':
-            current[idx][0] = 'jmp'
+            test[idx][0] = 'jmp'
         elif data[idx][0] == 'jmp':
-            current[idx][0] = 'nop'
+            test[idx][0] = 'nop'
 
-        test, fin = part_1(current)
+        count, fin = part_1(test)
         if fin:
-            return test
+            return count
 
 
 def main():
