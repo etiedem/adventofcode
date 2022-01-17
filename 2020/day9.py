@@ -17,13 +17,13 @@ def find_sum(data, target):
         sum = data[left]
         mn = mx = data[left]
         for right in range(left + 1, len(data)):
-            mn = data[right] if data[right] < mn else mn
-            mx = data[right] if data[right] > mx else mx
             sum += data[right]
-            if sum == target:
-                return mn + mx
             if sum > target:
                 break
+            mn = min(mn, data[right])
+            mx = max(mx, data[right])
+            if sum == target:
+                return mn + mx
 
 
 def find_error(data, size):
