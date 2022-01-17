@@ -10,10 +10,20 @@ def is_sum(data, target):
     for num in data:
         if target - num in data:
             return True
-    # for left in range(len(data) - 1):
-    #     for right in range(left + 1, len(data)):
-    #         if data[left] + data[right] == target:
-    #             return True
+
+
+def find_sum(data, target):
+    for left in range(len(data) - 1):
+        sum = data[left]
+        mn = mx = data[left]
+        for right in range(left + 1, len(data)):
+            mn = data[right] if data[right] < mn else mn
+            mx = data[right] if data[right] > mx else mx
+            sum += data[right]
+            if sum == target:
+                return mn + mx
+            if sum > target:
+                break
 
 
 def find_error(data, size):
@@ -24,7 +34,9 @@ def find_error(data, size):
 
 def main():
     data = get_data('day9.txt')
-    print(find_error(data, 25))
+    part1 = find_error(data, 25)
+    print(f'PART 1: {part1}')
+    print(f'PART 2: {find_sum(data, part1)}')
 
 
 if __name__ == "__main__":
