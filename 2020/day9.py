@@ -14,8 +14,7 @@ def is_sum(data, target):
 
 def find_sum(data, target):
     for left in range(len(data) - 1):
-        sum = data[left]
-        mn = mx = data[left]
+        sum = mn = mx = data[left]
         for right in range(left + 1, len(data)):
             sum += data[right]
             if sum > target:
