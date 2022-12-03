@@ -59,6 +59,7 @@ fn part2(data: Vec<(HashSet<char>, HashSet<char>, HashSet<char>)>) -> u32 {
     ).sum()
 }
 
+
 fn main() {
     let data_part1 = parse_data_part1(get_data("data.txt"));
     println!("PART1: {:?}", part1(data_part1));
