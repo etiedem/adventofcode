@@ -44,7 +44,13 @@ fn get_data(filename: &str) -> String {
 }
 
 fn parse_data(data: String) -> Vec<Vec<String>> {
-    data.lines().map(|x| x.split_whitespace().map(|x| x.to_string()).collect()).collect()
+    data
+    .lines()
+    .map(|x| x
+        .split_whitespace()
+        .map(|x| x.to_string())
+        .collect()
+    ).collect()
 }
 
 fn check_game(player1: &String, player2: &String) -> u32 {
