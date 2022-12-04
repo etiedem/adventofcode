@@ -6,13 +6,21 @@ struct Interval {
     end: u32,
 }
 
-fn fully_contains(slf: &Interval, other: &Interval) -> bool {
-    other.start >= slf.start && other.end <= slf.end
+impl Interval {
+    fn new(start: u32, end: u32) -> Self {
+        Interval { start, end }
+    }
+
+    fn fully_contains(self: &Interval, other: &Interval) -> bool {
+        other.start >= self.start && other.end <= self.end
+    }
+
+    fn contains(self: &Interval, other: &Interval) -> bool {
+        (self.start ..=self.end).any(|x| (other.start ..=other.end).contains(&x))
+    }
 }
 
-fn contains(slf: &Interval, other: &Interval) -> bool {
-    (slf.start ..=slf.end).any(|x| (other.start ..=other.end).contains(&x))
-}
+
 
 fn get_data(filename: &str) -> String {
     let mut file = File::open(filename).expect("file not found");
@@ -43,7 +51,7 @@ fn part1(data: &Vec<Vec<Interval>>) -> u32 {
     let mut count = 0;
     for pair in data {
         let (a, b) = (&pair[0], &pair[1]);
-        if fully_contains(a, b) || fully_contains(b, a) {
+        if a.fully_contains(b) || b.fully_contains(a) {
             count += 1;
         }
     }
@@ -54,7 +62,7 @@ fn part2(data: &Vec<Vec<Interval>>) -> u32 {
     let mut count = 0;
     for pair in data {
         let (a, b) = (&pair[0], &pair[1]);
-        if contains(a, b) || contains(b, a) {
+        if a.contains(b) || b.contains(a) {
             count += 1;
         }
     }
