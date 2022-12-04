@@ -6,8 +6,12 @@ struct Interval {
     end: u32,
 }
 
-fn contains(slf: &Interval, other: &Interval) -> bool {
+fn fully_contains(slf: &Interval, other: &Interval) -> bool {
     other.start >= slf.start && other.end <= slf.end
+}
+
+fn contains(slf: &Interval, other: &Interval) -> bool {
+    (slf.start ..=slf.end).any(|x| (other.start ..=other.end).contains(&x))
 }
 
 fn get_data(filename: &str) -> String {
@@ -39,6 +43,17 @@ fn part1(data: &Vec<Vec<Interval>>) -> u32 {
     let mut count = 0;
     for pair in data {
         let (a, b) = (&pair[0], &pair[1]);
+        if fully_contains(a, b) || fully_contains(b, a) {
+            count += 1;
+        }
+    }
+    count
+}
+
+fn part2(data: &Vec<Vec<Interval>>) -> u32 {
+    let mut count = 0;
+    for pair in data {
+        let (a, b) = (&pair[0], &pair[1]);
         if contains(a, b) || contains(b, a) {
             count += 1;
         }
@@ -49,4 +64,5 @@ fn part1(data: &Vec<Vec<Interval>>) -> u32 {
 fn main() {
     let data = parse_data(get_data("data.txt"));
     println!("PART1: {:?}", part1(&data));
+    println!("PART2: {:?}", part2(&data));
 }
