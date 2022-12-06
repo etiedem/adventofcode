@@ -43,9 +43,25 @@ fn part1(mut stacks: Vec<Vec<char>>, moves: Vec<Vec<u8>>) -> String {
         .filter_map(|x| x.first())
         .collect()
 }
+
+fn part2(mut stacks: Vec<Vec<char>>, moves: Vec<Vec<u8>>) -> String {
+    for m in moves {
+        let c = stacks[(m[1]-1) as usize]
+            .drain(0..m[0] as usize)
+            .collect::<Vec<char>>();
+        stacks[(m[2]-1) as usize].splice(0..0, c);
+    }
+
+    stacks
+        .iter()
+        .filter_map(|x| x.first())
+        .collect()
+}
+
 fn main() {
     let (crates, raw_moves) = include_str!("data.txt").split_once("\n\n").unwrap();
     let stacks = parse_crates(crates);
     let moves = parse_moves(raw_moves);
-    println!("PART1: {:?}", part1(stacks, moves));
+    println!("PART1: {:?}", part1(stacks.clone(), moves.clone()));
+    println!("PART2: {:?}", part2(stacks.clone(), moves.clone()));
 }
