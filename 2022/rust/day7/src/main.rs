@@ -70,15 +70,11 @@ fn parse_data(input: &str) -> IResult<&str, Vec<Cmd>> {
     Ok((input, items))
 }
 
-fn main() {
+fn get_directory_data(data: Vec<Cmd>) -> HashMap<String, u32> {
     let mut directory: HashMap<String, u32> = HashMap::new();
-
-    let data = include_str!("data.txt");
-    let (remain, filesys) = parse_data(data).unwrap();
-    dbg!(remain);
     let mut path = vec![];
 
-    for option in filesys.iter() {
+    for option in data.iter() {
         match option {
             Cmd::Cd(cd) => {
                 match cd.path.as_str() {
@@ -86,33 +82,49 @@ fn main() {
                         path.pop();
                     },
                     p => {
-                        path.push(p);
-                        if directory.get(p).is_none() {
-                            directory.insert(p.to_string(), 0);
+                        if p == "/" {
+                            path.push("");
+                        } else {
+                            path.push(p);
                         }
                     }
                 };
-                // dbg!(&path);
             },
             Cmd::Ls(ls) => {
                 for item in ls.items.iter() {
                     match item {
                         Item::File(file) => {
-                            for dir in &path {
-                                directory.entry(dir.to_string()).and_modify(|e| *e += file.size);
+                            for i in 1..=path.len() {
+                                directory.entry(path[0..i].join("/"))
+                                    .and_modify(|e| *e += file.size)
+                                    .or_insert(file.size);
                             }
+
                         },
                         Item::Dir(dir) => {
-                            if directory.get(&dir.path).is_none() {
-                                directory.insert(dir.path.clone(), 0);
-                            }
+                            ();
                         }
                     };
                 }
             },
         };
     }
+    directory
+}
 
-    let answer: u32 = directory.iter().filter(|d| *d.1 <= 100_000_u32).map(|d| *d.1).sum();
-    dbg!(answer);
+fn main() {
+
+    let data = include_str!("data.txt");
+    let (_, filesys) = parse_data(data).unwrap();
+    let directory = get_directory_data(filesys);
+    const PART1_SIZE: u32 = 100_000;
+    const TOTAL_DISK_SPACE: u32 = 70_000_000;
+    const INSTALL_SIZE: u32 = 30_000_000;
+
+    let part1: u32 = directory.iter().filter(|d| *d.1 <= PART1_SIZE).map(|d| *d.1).sum();
+    println!("PART1: {}", part1);
+
+    let PART2_SIZE: u32 = INSTALL_SIZE - (TOTAL_DISK_SPACE - directory.get("").unwrap());
+    let part2: u32 = directory.iter().filter(|d| *d.1 >= PART2_SIZE).map(|d| *d.1).min_by(|a,b| a.cmp(&b)).unwrap();
+    println!("PART2: {}", part2);
 }
