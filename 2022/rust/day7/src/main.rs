@@ -26,7 +26,6 @@ enum Item {
 #[derive(Debug)]
 struct File {
     size: u32,
-    name: String,
 }
 
 #[derive(Debug)]
@@ -51,9 +50,9 @@ fn dir(input: &str) -> IResult<&str, Item> {
 fn file(input: &str) -> IResult<&str, Item> {
     let (input, size) = digit1(input)?;
     let (input, _) = space1(input)?;
-    let (input, name) = not_line_ending(input)?;
+    let (input, _) = not_line_ending(input)?;
     let (input, _) = line_ending(input)?;
-    Ok((input, Item::File(File{size: size.parse().unwrap(), name: name.to_string()})))
+    Ok((input, Item::File(File{size: size.parse().unwrap()})))
 }
 
 fn ls(input: &str) -> IResult<&str, Cmd> {
@@ -92,21 +91,16 @@ fn get_directory_data(data: Vec<Cmd>) -> HashMap<String, u32> {
             },
             Cmd::Ls(ls) => {
                 for item in ls.items.iter() {
-                    match item {
-                        Item::File(file) => {
-                            for i in 1..=path.len() {
-                                directory.entry(path[0..i].join("/"))
-                                    .and_modify(|e| *e += file.size)
-                                    .or_insert(file.size);
-                            }
-
-                        },
-                        Item::Dir(dir) => {
-                            ();
+                    if let Item::File(file) = item {
+                        for i in 1..=path.len() {
+                            directory.entry(path[0..i].join("/"))
+                                .and_modify(|e| *e += file.size)
+                                .or_insert(file.size);
                         }
-                    };
+
+                    }
                 }
-            },
+            }
         };
     }
     directory
@@ -124,7 +118,7 @@ fn main() {
     let part1: u32 = directory.iter().filter(|d| *d.1 <= PART1_SIZE).map(|d| *d.1).sum();
     println!("PART1: {}", part1);
 
-    let PART2_SIZE: u32 = INSTALL_SIZE - (TOTAL_DISK_SPACE - directory.get("").unwrap());
-    let part2: u32 = directory.iter().filter(|d| *d.1 >= PART2_SIZE).map(|d| *d.1).min_by(|a,b| a.cmp(&b)).unwrap();
+    let needed_space: u32 = INSTALL_SIZE - (TOTAL_DISK_SPACE - directory.get("").unwrap());
+    let part2: u32 = directory.iter().filter(|d| *d.1 >= needed_space).map(|d| *d.1).min_by(|a,b| a.cmp(b)).unwrap();
     println!("PART2: {}", part2);
 }
