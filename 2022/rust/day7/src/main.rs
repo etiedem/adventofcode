@@ -3,48 +3,28 @@ use nom::{IResult, character::{complete::{line_ending, digit1, space1, not_line_
 
 #[derive(Debug)]
 enum Cmd {
-    Cd(Cd),
-    Ls(Ls),
-}
-
-#[derive(Debug)]
-struct Cd {
-    path: String,
-}
-
-#[derive(Debug)]
-struct Ls {
-    items: Vec<Item>,
+    Cd{dir: String},
+    Ls{items: Vec<Item>}
 }
 
 #[derive(Debug)]
 enum Item {
-    File(File),
-    Dir(Dir),
-}
-
-#[derive(Debug)]
-struct File {
-    size: u32,
-}
-
-#[derive(Debug)]
-struct Dir {
-    path: String,
+    File { size: u32 },
+    Dir { path: String }
 }
 
 fn cd(input: &str) -> IResult<&str, Cmd> {
     let (input, _) = tag("$ cd ")(input)?;
     let (input, path) = not_line_ending(input)?;
     let (input, _) = line_ending(input)?;
-    Ok((input, Cmd::Cd(Cd{path: path.to_string()})))
+    Ok((input, Cmd::Cd{dir: path.to_string()}))
 }
 
 fn dir(input: &str) -> IResult<&str, Item> {
     let (input, _) = tag("dir ")(input)?;
     let (input, path) = not_line_ending(input)?;
     let (input, _) = line_ending(input)?;
-    Ok((input, Item::Dir(Dir{path: path.to_string()})))
+    Ok((input, Item::Dir{path: path.to_string()}))
 }
 
 fn file(input: &str) -> IResult<&str, Item> {
@@ -52,7 +32,7 @@ fn file(input: &str) -> IResult<&str, Item> {
     let (input, _) = space1(input)?;
     let (input, _) = not_line_ending(input)?;
     let (input, _) = line_ending(input)?;
-    Ok((input, Item::File(File{size: size.parse().unwrap()})))
+    Ok((input, Item::File{size: size.parse().unwrap()}))
 }
 
 fn ls(input: &str) -> IResult<&str, Cmd> {
@@ -60,7 +40,7 @@ fn ls(input: &str) -> IResult<&str, Cmd> {
     let (input, _) = tag("$ ls")(input)?;
     let (input, _) = line_ending(input)?;
     let (input, items) = many1(file_or_dir)(input)?;
-    Ok((input, Cmd::Ls(Ls{items})))
+    Ok((input, Cmd::Ls{items}))
 }
 
 fn parse_data(input: &str) -> IResult<&str, Vec<Cmd>> {
@@ -75,8 +55,8 @@ fn get_directory_data(data: Vec<Cmd>) -> HashMap<String, u32> {
 
     for option in data.iter() {
         match option {
-            Cmd::Cd(cd) => {
-                match cd.path.as_str() {
+            Cmd::Cd{dir} => {
+                match dir.as_str() {
                     ".." => {
                         path.pop();
                     },
@@ -84,18 +64,18 @@ fn get_directory_data(data: Vec<Cmd>) -> HashMap<String, u32> {
                         if p == "/" {
                             path.push("");
                         } else {
-                            path.push(p);
+                            path.push(dir);
                         }
                     }
                 };
             },
-            Cmd::Ls(ls) => {
-                for item in ls.items.iter() {
-                    if let Item::File(file) = item {
+            Cmd::Ls{items} => {
+                for item in items.iter() {
+                    if let Item::File{size} = item {
                         for i in 1..=path.len() {
                             directory.entry(path[0..i].join("/"))
-                                .and_modify(|e| *e += file.size)
-                                .or_insert(file.size);
+                                .and_modify(|e| *e += size)
+                                .or_insert(*size);
                         }
 
                     }
