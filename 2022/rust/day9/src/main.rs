@@ -52,12 +52,10 @@ fn move_segment(prev: &Coord, cur: &mut Coord, head: bool) -> HashSet<Coord> {
 fn move_all(end: Coord, segments: &mut Vec<Coord>) -> HashSet<Coord> {
     let mut map = HashSet::new();
     let mut prev = end;
-    let mut new_segments = Vec::new();
 
     for (count, mut segment) in (0..segments.len()).zip(segments) {
         map = move_segment(&prev, &mut segment, count==0);
         prev = *segment;
-        new_segments.push(*segment);
     }
     map
 }
