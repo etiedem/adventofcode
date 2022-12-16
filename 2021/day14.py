@@ -1,6 +1,8 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
 
+from pyparsing import Char, Dict, Group, Literal, OneOrMore, Word, alphas
+# import pyparsing as pp
 from rich import print
 
 
@@ -8,7 +10,7 @@ from rich import print
 class Polymer:
     base: str
     rules: dict
-    counter: dict = field(default_factory=dict)
+    counter: dict = field(init=False)
 
     def __post_init__(self):
         self.counter = {rule: 0 for rule in self.rules}
@@ -48,9 +50,13 @@ class Polymer:
 
 
 def get_data(filename):
-    with open(filename, 'r', encoding='utf-8') as f:
-        start, rules = f.read().split('\n\n')
-        return start, dict([rule.split(' -> ') for rule in rules.splitlines()])
+    rules = OneOrMore(Group(Word(alphas) + Literal('->').suppress() + Char(alphas)))
+    parser = Word(alphas)[1]("start") + Dict(rules)("rules")
+    data = parser.parse_file(filename)
+    return data.start, data.rules.as_dict()
+    # with open(filename, 'r', encoding='utf-8') as f:
+    #     start, rules = f.read().split('\n\n')
+    # return start, dict([rule.split(' -> ') for rule in rules.splitlines()])
 
 
 def main():

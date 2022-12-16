@@ -53,6 +53,7 @@ def main():
     data = get_data('day12.txt')
     graph = create_graph(data)
     graphs = []
+    print(graph)
     traverse(graph, graphs)
     print(len(graphs))
 

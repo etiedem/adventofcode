@@ -29,7 +29,7 @@ fn get_data(filename: &str) -> String {
     contents
 }
 
-fn parse_data(data: String) -> Vec<Vec<Interval>>  {
+fn parse_data(data: String) -> Vec<Vec<Interval>> {
 
     data.split_whitespace()
         .map(|line|

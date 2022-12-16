@@ -11,8 +11,11 @@ struct Instruction {
 impl FromStr for Instruction {
     type Err = ParseError;
     fn from_str(s: &str) -> Result<Self,Self::Err> {
-        let data: Vec<String> = s.split_whitespace().map(|s| s.parse::<String>().unwrap()).collect();
-        Ok(Instruction { direction: data[0].to_string(), step: data[1].parse().unwrap() })
+        let data: Vec<String> = s.split_whitespace().map(|s| s.to_string()).collect();
+        Ok(Instruction {
+            direction: data[0].to_string(),
+            step: data[1].parse().unwrap()
+        })
     }
 }
 
@@ -20,7 +23,7 @@ fn get_data(filename: &str) -> Vec<Instruction> {
     let contents = fs::read_to_string(filename).expect("Error reading file");
     let data: Vec<Instruction> = contents.trim()
     .split("\n")
-    .map(|s| s.parse::<Instruction>().unwrap())
+    .map(|s| s.parse().unwrap())
     .collect();
     data
 }
