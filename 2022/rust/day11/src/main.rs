@@ -16,7 +16,7 @@ struct Monkey {
     count: i32,
 }
 
-fn parse_monkey_numer(input: &str) -> IResult<&str, i32> {
+fn parse_monkey_number(input: &str) -> IResult<&str, i32> {
     let (input, num) = preceded(tag("Monkey "), digit1)(input)?;
     let(input, _) = terminated(tag(":"), newline)(input)?;
     Ok((input, num.parse().unwrap()))
@@ -61,7 +61,7 @@ fn parse_false(input: &str) -> IResult<&str, i32> {
 }
 
 fn parse_monkey(input: &str) -> IResult<&str, Monkey> {
-    let(input, number) = parse_monkey_numer(input)?;
+    let(input, number) = parse_monkey_number(input)?;
     let (input, items) = parse_starting_items(input)?;
     let (input, operation) = parse_operation(input)?;
     let (input, test) = parse_test(input)?;
