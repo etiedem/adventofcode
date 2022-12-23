@@ -1,19 +1,39 @@
-
-use nom::{self, sequence::{terminated, preceded, separated_pair},  character::{complete::{ digit1, newline, not_line_ending, one_of, alphanumeric1}}, bytes::complete::{tag}, IResult, multi::{separated_list1, many1}, combinator::opt};
+use nom::{
+    self,
+    bytes::complete::tag,
+    character::complete::{alphanumeric1, digit1, newline, not_line_ending, one_of},
+    combinator::opt,
+    multi::{many1, separated_list1},
+    sequence::{preceded, separated_pair, terminated},
+    IResult,
+};
 #[derive(Debug, Clone)]
 enum Operation {
-    Multiply(i32),
-    Add(i32),
+    Multiply(i64),
+    MultiplySelf,
+    Add(i64),
+    AddSelf,
+}
+
+impl Operation {
+    fn calc(&self, val: i64) -> i64 {
+        match self {
+            Self::Multiply(n) => val * *n,
+            Self::MultiplySelf => val * val,
+            Self::Add(n) => val + *n,
+            Self::AddSelf => val + val,
+        }
+    }
 }
 #[derive(Debug, Clone)]
 struct Monkey {
     number: i32,
-    items: Vec<i32>,
+    items: Vec<i64>,
     operation: Operation,
-    test: i32,
-    itrue: i32,
-    ifalse: i32,
-    count: i32,
+    test: i64,
+    itrue: i64,
+    ifalse: i64,
+    count: i64,
 }
 
 fn parse_monkey_number(input: &str) -> IResult<&str, i32> {
@@ -22,8 +42,11 @@ fn parse_monkey_number(input: &str) -> IResult<&str, i32> {
     Ok((input, num.parse().unwrap()))
 }
 
-fn parse_starting_items(input: &str) -> IResult<&str, Vec<i32>> {
-    let (input, items) = preceded(tag("  Starting items: "), separated_list1(tag(", "), digit1))(input)?;
+fn parse_starting_items(input: &str) -> IResult<&str, Vec<i64>> {
+    let (input, items) = preceded(
+        tag("  Starting items: "),
+        separated_list1(tag(", "), digit1),
+    )(input)?;
     let (input, _) = newline(input)?;
     Ok((input, items.iter().map(|x| x.parse().unwrap()).collect()))
 }
@@ -31,30 +54,39 @@ fn parse_starting_items(input: &str) -> IResult<&str, Vec<i32>> {
 fn parse_operation(input: &str) -> IResult<&str, Operation> {
     let (input, operation_raw) = preceded(tag("  Operation: new = old "), not_line_ending)(input)?;
     let (input, _) = newline(input)?;
-    let (_, (operation, num_raw)) = separated_pair(one_of("*+"), tag(" "), alphanumeric1)(operation_raw)?;
+    let (_, (operation, num_raw)) =
+        separated_pair(one_of("*+"), tag(" "), alphanumeric1)(operation_raw)?;
     let num = num_raw.parse().unwrap_or(-1);
 
-    let op = match operation {
-        '*' => Operation::Multiply(num),
-        '+' => Operation::Add(num),
-        _ => unreachable!(),
+    let op = if num == -1 {
+        match operation {
+            '*' => Operation::MultiplySelf,
+            '+' => Operation::AddSelf,
+            _ => unreachable!(),
+        }
+    } else {
+        match operation {
+            '*' => Operation::Multiply(num),
+            '+' => Operation::Add(num),
+            _ => unreachable!(),
+        }
     };
     Ok((input, op))
 }
 
-fn parse_test(input: &str) -> IResult<&str, i32> {
+fn parse_test(input: &str) -> IResult<&str, i64> {
     let (input, test) = preceded(tag("  Test: divisible by "), digit1)(input)?;
     let (input, _) = newline(input)?;
     Ok((input, test.parse().unwrap()))
 }
 
-fn parse_true(input: &str) -> IResult<&str, i32> {
+fn parse_true(input: &str) -> IResult<&str, i64> {
     let (input, itrue) = preceded(tag("    If true: throw to monkey "), digit1)(input)?;
     let (input, _) = newline(input)?;
     Ok((input, itrue.parse().unwrap()))
 }
 
-fn parse_false(input: &str) -> IResult<&str, i32> {
+fn parse_false(input: &str) -> IResult<&str, i64> {
     let (input, ifalse) = preceded(tag("    If false: throw to monkey "), digit1)(input)?;
     let (input, _) = newline(input)?;
     Ok((input, ifalse.parse().unwrap()))
@@ -67,7 +99,18 @@ fn parse_monkey(input: &str) -> IResult<&str, Monkey> {
     let (input, test) = parse_test(input)?;
     let (input, itrue) = parse_true(input)?;
     let (input, ifalse) = parse_false(input)?;
-    Ok((input, Monkey { number, items, operation, test, itrue, ifalse, count: 0 }))
+    Ok((
+        input,
+        Monkey {
+            number,
+            items,
+            operation,
+            test,
+            itrue,
+            ifalse,
+            count: 0,
+        },
+    ))
 }
 
 fn parse_data(data: &str) -> Vec<Monkey> {
@@ -75,34 +118,45 @@ fn parse_data(data: &str) -> Vec<Monkey> {
     monkeys
 }
 
-fn round(monkeys: &mut Vec<Monkey>) {
+fn round(monkeys: &mut Vec<Monkey>, part1: bool) {
+    let modvalue: i64 = monkeys.iter().map(|x| x.test).product();
+
     for idx in 0..monkeys.len() {
         let ro_monkey = monkeys[idx].clone();
         for item in ro_monkey.items {
             monkeys[idx].count += 1;
 
-            let worry = match monkeys[idx].operation {
-                Operation::Multiply(-1) => item * item,
-                Operation::Multiply(x) => item * x,
-                Operation::Add(x) => item + x,
-            } / 3;
-
-            if worry % monkeys[idx].test == 0 {
-                monkeys[ro_monkey.itrue as usize].items.push(worry);
+            let worry = if part1 {
+                monkeys[idx].operation.calc(item) / 3
             } else {
-                monkeys[ro_monkey.ifalse as usize].items.push(worry);
-            }
+                monkeys[idx].operation.calc(item) % modvalue
+            };
+
+            let dest = if worry % monkeys[idx].test == 0 {
+                ro_monkey.itrue as usize
+            } else {
+                ro_monkey.ifalse as usize
+            };
+            monkeys[dest].items.push(worry);
         }
         monkeys[idx].items.clear();
     }
 }
 
 fn main() {
-    let mut data = parse_data(include_str!("data.txt"));
+    let data = parse_data(include_str!("data.txt"));
 
+    let mut part1_data = data.clone();
     for _ in 0..20 {
-        round(&mut data);
+        round(&mut part1_data, true);
     }
-    data.sort_by(|a,b| b.count.cmp(&a.count));
-    println!("PART1: {}", &data[0].count * &data[1].count);
+    part1_data.sort_by(|a, b| b.count.cmp(&a.count));
+    println!("PART1: {}", part1_data[0].count * part1_data[1].count);
+
+    let mut part2_data = data.clone();
+    for _ in 0..10_000 {
+        round(&mut part2_data, false);
+    }
+    part2_data.sort_by(|a, b| b.count.cmp(&a.count));
+    println!("PART2: {}", part2_data[0].count * part2_data[1].count);
 }
