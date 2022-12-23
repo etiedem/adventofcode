@@ -1,5 +1,5 @@
 use std::cmp::Ordering;
-use std::collections::{HashMap, BinaryHeap};
+use std::collections::{BinaryHeap, HashMap};
 use std::hash::Hash;
 
 #[derive(Debug)]
@@ -10,14 +10,15 @@ struct Map {
 }
 
 impl Map {
-    fn get_neighbors(&self, node:&Node) -> Vec<Node> {
+    fn get_neighbors(&self, node: &Node) -> Vec<Node> {
         let mut neighbors = Vec::new();
-        let moves = vec![(0,1), (1,0), (0,-1), (-1,0)];
-        for (x,y) in moves {
+        let moves = vec![(0, 1), (1, 0), (0, -1), (-1, 0)];
+        for (x, y) in moves {
             let new_x = node.x + x;
             let new_y = node.y + y;
-            if self.check_bounds(new_x, new_y) &&
-               self.grid[(new_y) as usize][(new_x) as usize].value <= node.value + 1 {
+            if self.check_bounds(new_x, new_y)
+                && self.grid[(new_y) as usize][(new_x) as usize].value <= node.value + 1
+            {
                 neighbors.push(self.grid[(new_y) as usize][(new_x) as usize])
             }
         }
@@ -28,19 +29,22 @@ impl Map {
         x >= 0 && x < self.width as isize && y >= 0 && y < self.length as isize
     }
 
-    fn show_path(&self, path:Vec<Node>) {
+    fn show_path(&self, path: Vec<Node>) {
         for row in self.grid.iter() {
             for item in row {
                 if path.contains(item) {
                     print!("X");
                 } else {
-                   print!(".");
+                    print!(".");
                 }
             }
             println!();
         }
     }
 
+    fn iter(&self) -> impl Iterator<Item = &Node> {
+        self.grid.iter().flat_map(|row| row.iter())
+    }
 }
 
 #[derive(Debug)]
@@ -67,7 +71,6 @@ impl PartialEq for State {
 }
 impl Eq for State {}
 
-
 #[derive(Debug, Hash, Eq, PartialEq, Default, Clone, Copy)]
 struct Node {
     x: isize,
@@ -82,11 +85,10 @@ impl Node {
     }
 }
 
-
 fn parse_data(data: &str) -> Vec<Vec<char>> {
     data.split_whitespace()
-    .map(|line| line.chars().collect())
-    .collect()
+        .map(|line| line.chars().collect())
+        .collect()
 }
 
 fn create_map(data: Vec<Vec<char>>) -> (Node, Node, Map) {
@@ -102,38 +104,79 @@ fn create_map(data: Vec<Vec<char>>) -> (Node, Node, Map) {
                 c => (*c as usize) - 96,
             };
             if *item == 'S' {
-                start = Node{x: x as isize, y: y as isize, item: *item, value: value as isize};
-                new_row.push(Node{x: x as isize, y: y as isize, item: *item, value: value as isize});
+                start = Node {
+                    x: x as isize,
+                    y: y as isize,
+                    item: *item,
+                    value: value as isize,
+                };
+                new_row.push(Node {
+                    x: x as isize,
+                    y: y as isize,
+                    item: *item,
+                    value: value as isize,
+                });
             } else if *item == 'E' {
-                goal = Node{x: x as isize, y: y as isize, item: *item, value: value as isize};
-                new_row.push(Node{x: x as isize, y: y as isize, item: *item, value: value as isize});
+                goal = Node {
+                    x: x as isize,
+                    y: y as isize,
+                    item: *item,
+                    value: value as isize,
+                };
+                new_row.push(Node {
+                    x: x as isize,
+                    y: y as isize,
+                    item: *item,
+                    value: value as isize,
+                });
             } else {
-                new_row.push(Node{x: x as isize, y: y as isize, item: *item, value: value as isize});
+                new_row.push(Node {
+                    x: x as isize,
+                    y: y as isize,
+                    item: *item,
+                    value: value as isize,
+                });
             }
         }
         grid.push(new_row);
     }
     let length = grid.len();
     let width = grid[0].len();
-    ( start, goal, Map { grid , length, width } )
+    (
+        start,
+        goal,
+        Map {
+            grid,
+            length,
+            width,
+        },
+    )
 }
 
 fn dijkstra(graph: &Map, start: Node) -> HashMap<Node, Option<Node>> {
     let mut q = BinaryHeap::new();
-    let mut prev:HashMap<Node, Option<Node>> = HashMap::new();
-    let mut dist:HashMap<Node, isize> = HashMap::new();
+    let mut prev: HashMap<Node, Option<Node>> = HashMap::new();
+    let mut dist: HashMap<Node, isize> = HashMap::new();
 
     dist.insert(start, 0);
-    q.push(State{dist: 0, node: start});
+    q.push(State {
+        dist: 0,
+        node: start,
+    });
 
     while !q.is_empty() {
         let current = q.pop().unwrap();
 
         for nei in graph.get_neighbors(&current.node) {
-            let alt = State { dist: current.dist.saturating_add(nei.manhattan_distance(&start)), node: nei};
+            let alt = State {
+                dist: current.dist.saturating_add(nei.manhattan_distance(&start)),
+                node: nei,
+            };
             if alt.dist < *dist.entry(nei).or_insert(isize::MAX) {
                 dist.entry(nei).and_modify(|e| *e = alt.dist);
-                prev.entry(nei).and_modify(|e| *e = Some(current.node)).or_insert(Some(current.node));
+                prev.entry(nei)
+                    .and_modify(|e| *e = Some(current.node))
+                    .or_insert(Some(current.node));
                 q.push(alt);
             }
         }
@@ -154,25 +197,16 @@ fn get_path(data: HashMap<Node, Option<Node>>, goal: Node) -> Vec<Node> {
 }
 
 fn find_char(map: &Map, find: char) -> Vec<Node> {
-    let mut result: Vec<Node> = Vec::new();
-    for row in map.grid.iter() {
-        for item in row {
-            if item.item == find {
-                result.push(*item);
-            }
-        }
-    }
-    result
+    map.iter().filter(|i| i.item == find).map(|i| *i).collect()
 }
 
-fn find_path(map: &Map, find:char, goal:Node) -> Vec<Node> {
+fn find_path(map: &Map, find: char, goal: Node) -> Vec<Node> {
     let mut min: Vec<Node> = Vec::new();
     for start in find_char(&map, find) {
         let current = get_path(dijkstra(map, start), goal);
         if current.len() > 1 && (min.is_empty() || (current.len() < min.len())) {
             min = current;
         }
-
     }
     min
 }
