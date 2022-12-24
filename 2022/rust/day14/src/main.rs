@@ -11,7 +11,7 @@ struct Point(i32, i32);
 impl FromStr for Point {
     type Err = ParsePointError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (x, y) = s.split_once(",").ok_or(ParsePointError)?;
+        let (x, y) = s.split_once(',').ok_or(ParsePointError)?;
         Ok(Point(
             x.parse().map_err(|_| ParsePointError)?,
             y.parse().map_err(|_| ParsePointError)?,
@@ -19,7 +19,7 @@ impl FromStr for Point {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Eq, PartialEq, Clone)]
 enum Item {
     #[default]
     Air,
@@ -28,12 +28,18 @@ enum Item {
     Generator,
 }
 
-#[derive(Debug, Default)]
-struct Grid(Vec<Vec<Item>>);
+#[derive(Debug, Default, Clone)]
+struct Map {
+    grid: Vec<Vec<Item>>,
+    generator: Point,
+    width: i32,
+    length: i32,
+    done: bool,
+}
 
-impl Grid {
+impl Map {
     fn show(self) {
-        for row in self.0 {
+        for row in self.grid {
             for item in row {
                 let symbol = match item {
                     Item::Air => '.',
@@ -44,6 +50,44 @@ impl Grid {
                 print!("{symbol}");
             }
             println!();
+        }
+    }
+
+    fn check_bounds(&self, x: i32, y: i32) -> bool {
+        x >= 0 && x <= self.width && y >= 0 && y < self.length
+    }
+
+    fn check_ground(&self, x: i32, y: i32) -> bool {
+        if !self.check_bounds(x - 1, y) || !self.check_bounds(x, y - 1) {
+            return false;
+        }
+        true
+    }
+
+    fn get_move(&self, point: &Point) -> Option<Point> {
+        let moves = vec![(0, 1), (-1, 1), (1, 1)];
+        for (x, y) in moves {
+            let new_x = point.0 + x;
+            let new_y = point.1 + y;
+            if let Item::Air = self.grid[new_y as usize][new_x as usize] {
+                return Some(Point(new_x, new_y));
+            }
+        }
+        None
+    }
+
+    fn step(&mut self) {
+        let mut current = Point(self.generator.0, self.generator.1 + 1);
+        while let Some(next) = self.get_move(&current) {
+            if self.check_bounds(next.0, next.1) {
+                current = next;
+            } else {
+                self.done = true;
+                return;
+            }
+        }
+        if self.check_ground(current.0, current.1) {
+            self.grid[current.1 as usize][current.0 as usize] = Item::Sand;
         }
     }
 }
@@ -71,7 +115,7 @@ fn fill_in_points(data: &Vec<Point>) -> Vec<Point> {
     rock_path
 }
 
-fn create_grid(data: Vec<Vec<Point>>) -> Grid {
+fn create_map(data: Vec<Vec<Point>>) -> Map {
     let iter = data.iter().flat_map(|x| x.iter());
 
     let (xmin, xmax) = match iter.clone().map(|point| point.0).minmax() {
@@ -85,12 +129,16 @@ fn create_grid(data: Vec<Vec<Point>>) -> Grid {
         _ => unreachable!(),
     };
     let ymin = 0;
+    let width = xmax - xmin;
+    let length = 2 + ymax - ymin;
+
+    let generator = Point(500 - xmin, 0);
     let rocks: Vec<Point> = data.iter().flat_map(fill_in_points).collect();
-    let mut grid: Vec<Vec<Item>> = Vec::with_capacity((ymax - ymin) as usize);
-    for y in 0..=ymax - ymin {
-        let mut row: Vec<Item> = Vec::with_capacity((xmax - xmin) as usize);
-        for x in 0..=xmax - xmin {
-            if (x, y) == (500 - xmin, 0) {
+    let mut grid: Vec<Vec<Item>> = Vec::with_capacity((length) as usize);
+    for y in 0..=length {
+        let mut row: Vec<Item> = Vec::with_capacity((width) as usize);
+        for x in 0..=width {
+            if (x, y) == (generator.0, generator.1) {
                 row.push(Item::Generator);
             } else if rocks.contains(&Point(x + xmin, y + ymin)) {
                 row.push(Item::Rock);
@@ -100,11 +148,23 @@ fn create_grid(data: Vec<Vec<Point>>) -> Grid {
         }
         grid.push(row);
     }
-    Grid(grid)
+    Map {
+        grid,
+        generator,
+        length,
+        width,
+        done: false,
+    }
 }
 
 fn main() {
     let data = parse_data(include_str!("data.txt"));
-    let grid = create_grid(data);
-    grid.show();
+    let mut grid = create_map(data);
+    let mut count = 0;
+    while !grid.done {
+        grid.step();
+        count += 1;
+    }
+    // grid.show();
+    println!("PART 1: {}", count - 1);
 }
