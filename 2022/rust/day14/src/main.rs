@@ -35,11 +35,14 @@ struct Map {
     width: i32,
     length: i32,
     done: bool,
+    full: bool,
 }
 
 impl Map {
-    fn show(self) {
-        for row in self.grid {
+    fn show(&self) {
+        for (idx, row) in self.grid.iter().enumerate() {
+            let num = format!("{:0>2}", idx);
+            print!("{num} ");
             for item in row {
                 let symbol = match item {
                     Item::Air => '.',
@@ -61,6 +64,9 @@ impl Map {
         if !self.check_bounds(x - 1, y) || !self.check_bounds(x, y - 1) {
             return false;
         }
+        if let Item::Air = self.grid[(y + 1) as usize][x as usize] {
+            return false;
+        }
         true
     }
 
@@ -69,25 +75,34 @@ impl Map {
         for (x, y) in moves {
             let new_x = point.0 + x;
             let new_y = point.1 + y;
-            if let Item::Air = self.grid[new_y as usize][new_x as usize] {
-                return Some(Point(new_x, new_y));
+            if self.check_bounds(new_x, new_y) {
+                if let Item::Air = self.grid[new_y as usize][new_x as usize] {
+                    return Some(Point(new_x, new_y));
+                }
             }
         }
         None
     }
 
-    fn step(&mut self) {
-        let mut current = Point(self.generator.0, self.generator.1 + 1);
+    fn step(&mut self, floor: bool) {
+        let start = Point(self.generator.0, self.generator.1 + 1);
+        let mut current = start.clone();
+
         while let Some(next) = self.get_move(&current) {
-            if self.check_bounds(next.0, next.1) {
-                current = next;
+            current = next;
+        }
+
+        if !floor {
+            if self.check_ground(current.0, current.1) {
+                self.grid[current.1 as usize][current.0 as usize] = Item::Sand;
             } else {
                 self.done = true;
-                return;
             }
-        }
-        if self.check_ground(current.0, current.1) {
+        } else {
             self.grid[current.1 as usize][current.0 as usize] = Item::Sand;
+        }
+        if current == start {
+            self.full = true;
         }
     }
 }
@@ -118,7 +133,7 @@ fn fill_in_points(data: &Vec<Point>) -> Vec<Point> {
 fn create_map(data: Vec<Vec<Point>>) -> Map {
     let iter = data.iter().flat_map(|x| x.iter());
 
-    let (xmin, xmax) = match iter.clone().map(|point| point.0).minmax() {
+    let (mut xmin, xmax) = match iter.clone().map(|point| point.0).minmax() {
         MinMax(min, max) => (min, max),
         OneElement(x) => (x, x),
         _ => unreachable!(),
@@ -129,8 +144,9 @@ fn create_map(data: Vec<Vec<Point>>) -> Map {
         _ => unreachable!(),
     };
     let ymin = 0;
-    let width = xmax - xmin;
-    let length = 2 + ymax - ymin;
+    xmin /= 2;
+    let width = (xmax / 3) + xmax - xmin;
+    let length = 3 + ymax - ymin;
 
     let generator = Point(500 - xmin, 0);
     let rocks: Vec<Point> = data.iter().flat_map(fill_in_points).collect();
@@ -140,7 +156,7 @@ fn create_map(data: Vec<Vec<Point>>) -> Map {
         for x in 0..=width {
             if (x, y) == (generator.0, generator.1) {
                 row.push(Item::Generator);
-            } else if rocks.contains(&Point(x + xmin, y + ymin)) {
+            } else if rocks.contains(&Point(x + xmin, y + ymin - 1)) {
                 row.push(Item::Rock);
             } else {
                 row.push(Item::Air);
@@ -154,6 +170,7 @@ fn create_map(data: Vec<Vec<Point>>) -> Map {
         length,
         width,
         done: false,
+        full: false,
     }
 }
 
@@ -162,9 +179,14 @@ fn main() {
     let mut grid = create_map(data);
     let mut count = 0;
     while !grid.done {
-        grid.step();
+        grid.step(false);
         count += 1;
     }
-    // grid.show();
     println!("PART 1: {}", count - 1);
+
+    while !grid.full {
+        grid.step(true);
+        count += 1;
+    }
+    println!("PART 2: {}", count - 1);
 }
