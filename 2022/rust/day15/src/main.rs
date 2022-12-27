@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use itertools::Itertools;
 use itertools::MinMaxResult::{MinMax, OneElement};
 
@@ -6,7 +8,7 @@ use nom::combinator::rest;
 use nom::sequence::preceded;
 use nom::IResult;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 struct Position(i32, i32);
 
 #[derive(Debug)]
@@ -26,14 +28,16 @@ impl Sensor {
         ]
     }
 
-    fn search_fill(&self) -> Vec<Position> {
+    fn search_fill(&self, pos: i32) -> Vec<Position> {
         let mut count = 1;
         let mut result = Vec::new();
         let mut current = Position(self.pos.0, self.pos.1 + self.manhattan);
         while count != 0 {
-            for x in 0..count {
-                result.push(Position(current.0 - x, current.1));
-                result.push(Position(current.0 + x, current.1));
+            if current.1 == pos {
+                for x in 0..count {
+                    result.push(Position(current.0 - x, current.1));
+                    result.push(Position(current.0 + x, current.1));
+                }
             }
             if current.1 > self.pos.1 {
                 count += 1;
@@ -78,28 +82,28 @@ impl Map {
         }
     }
 
-    fn new(data: &Vec<Sensor>) -> Self {
-        let (xmin, xmax, ymin, ymax) = get_bounds(data);
-        let height = (ymax - ymin) as usize;
-        let width = (xmax - xmin) as usize;
+    // fn new(data: &Vec<Sensor>) -> Self {
+    //     let (xmin, xmax, ymin, ymax) = get_bounds(data);
+    //     let height = (ymax - ymin) as usize;
+    //     let width = (xmax - xmin) as usize;
 
-        let mut grid = vec![vec![Item::Air; width + 1]; height + 1];
-        for sensor in data {
-            for search in sensor.search_fill() {
-                grid[(search.1 - ymin) as usize][(search.0 - xmin) as usize] = Item::Searched;
-            }
-            grid[(sensor.pos.1 - ymin) as usize][(sensor.pos.0 - xmin) as usize] = Item::Sensor;
-            grid[(sensor.beacon.1 - ymin) as usize][(sensor.beacon.0 - xmin) as usize] =
-                Item::Beacon;
-        }
+    //     let mut grid = vec![vec![Item::Air; width + 1]; height + 1];
+    //     for sensor in data {
+    //         for search in sensor.search_fill() {
+    //             grid[(search.1 - ymin) as usize][(search.0 - xmin) as usize] = Item::Searched;
+    //         }
+    //         grid[(sensor.pos.1 - ymin) as usize][(sensor.pos.0 - xmin) as usize] = Item::Sensor;
+    //         grid[(sensor.beacon.1 - ymin) as usize][(sensor.beacon.0 - xmin) as usize] =
+    //             Item::Beacon;
+    //     }
 
-        Map {
-            grid,
-            height,
-            width,
-            ymin,
-        }
-    }
+    //     Map {
+    //         grid,
+    //         height,
+    //         width,
+    //         ymin,
+    //     }
+    // }
 }
 
 fn parse_position(input: &str) -> IResult<&str, Position> {
@@ -156,14 +160,28 @@ fn get_bounds(data: &Vec<Sensor>) -> (i32, i32, i32, i32) {
 
 fn main() {
     let data = parse_data(include_str!("data.txt"));
-    let map = Map::new(&data);
-    // map.show();
-    println!(
-        "PART 1: {:?}",
-        map.grid[(2_000_000 - map.ymin) as usize]
-            .iter()
-            .filter(|x| *x != &Item::Air)
-            .filter(|x| *x != &Item::Beacon)
-            .count()
-    );
+    let line = 2_000_000;
+    // let mut count = data.iter().map(|x| &x.pos).filter(|x| x.1 == line).count();
+    // count += data
+    //     .iter()
+    //     .map(|x| &x.beacon)
+    //     .filter(|x| x.1 == line)
+    //     .count();
+    let mut count = data
+        .iter()
+        .flat_map(|x| x.search_fill(line))
+        .filter(|x| match x {
+            Position(_, 2_000_000) => true,
+            _ => false,
+        })
+        .collect::<HashSet<Position>>()
+        .len();
+    count -= data
+        .iter()
+        .map(|x| &x.beacon)
+        .filter(|x| x.1 == line)
+        .collect::<HashSet<_>>()
+        .len();
+
+    println!("PART 1: {}", count);
 }
