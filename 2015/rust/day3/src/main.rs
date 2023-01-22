@@ -25,6 +25,8 @@ fn part2(data: &str) -> u32 {
     let mut houses: HashMap<(i32, i32), u32> = HashMap::new();
     let mut santa = (0, 0);
     let mut robot = (0, 0);
+    let mut current: &mut (i32, i32);
+    houses.insert(santa, 2);
 
     for (i, c) in data.chars().enumerate() {
         let (x, y) = match c {
@@ -34,15 +36,15 @@ fn part2(data: &str) -> u32 {
             '<' => (-1, 0),
             _ => (0, 0),
         };
+
         if i % 2 == 0 {
-            santa.0 += x;
-            santa.1 += y;
-            *houses.entry(santa).or_insert(0) += 1;
+            current = &mut santa;
         } else {
-            robot.0 += x;
-            robot.1 += y;
-            *houses.entry(robot).or_insert(0) += 1;
+            current = &mut robot;
         }
+        current.0 += x;
+        current.1 += y;
+        *houses.entry(*current).or_insert(0) += 1;
     }
     houses.len() as u32
 }
