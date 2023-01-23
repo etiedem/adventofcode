@@ -71,13 +71,13 @@ fn part1(instructions: &Vec<Instr>) -> usize {
 }
 
 fn part2(instructions: &Vec<Instr>) -> usize {
-    let mut grid = [[0; 1000]; 1000];
+    let mut grid = [[0usize; 1000]; 1000];
     for instr in instructions {
         for x in instr.x1..=instr.x2 {
             for y in instr.y1..=instr.y2 {
                 match instr.action {
                     Action::TurnOn => grid[x][y] += 1,
-                    Action::TurnOff => grid[x][y] = (grid[x][y] as usize).saturating_sub(1),
+                    Action::TurnOff => grid[x][y] = grid[x][y].saturating_sub(1),
                     Action::Toggle => grid[x][y] += 2,
                 }
             }
