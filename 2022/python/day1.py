@@ -1,6 +1,3 @@
-from functools import partial
-from itertools import chain
-
 from rich import print
 
 
