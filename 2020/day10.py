@@ -2,7 +2,7 @@ from rich import print
 
 
 def get_data(filename):
-    with open(filename, 'r', encoding='utf-8') as f:
+    with open(filename, "r", encoding="utf-8") as f:
         return sorted(map(int, f.read().splitlines()))
 
 
@@ -37,9 +37,9 @@ def part2(data):
 
 
 def main():
-    data = get_data('day10.txt')
+    data = get_data("day10.txt")
     data = [0, *data, data[-1] + 3]
-    print(f'PART 1: {part1(data)}')
+    print(f"PART 1: {part1(data)}")
     part2(data)
 
 

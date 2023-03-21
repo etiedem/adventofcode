@@ -50,8 +50,8 @@ def part2(moves):
     for move in moves:
         match move:
             case ["F", step]:
-                dx = max(dx, sx) - min(dx, sx)
-                dy = max(dy, sy) - min(dy, sy)
+                dx = max(wx, sx) - min(wx, sx)
+                dy = max(wy, sy) - min(wy, sy)
 
                 for _ in range(step):
                     sx = wx
@@ -73,7 +73,7 @@ def part2(moves):
             case ["L", step]:
                 facing -= step
                 facing %= 360
-    return abs(x) + abs(y)
+    return abs(wx) + abs(wy)
 
 
 def main():

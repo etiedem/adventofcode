@@ -46,6 +46,7 @@ def part_2(data):
         count, fin = part_1(test)
         if fin:
             return count
+    return None
 
 
 def main():
