@@ -43,14 +43,13 @@ def check_game(player1, player2):
 
     if p1 == p2:
         return RESULT.DRAW + p2
-    elif p2 == CHOICE.ROCK and p1 == CHOICE.SCISSORS:
+    if p2 == CHOICE.ROCK and p1 == CHOICE.SCISSORS:
         return RESULT.WIN + p2
-    elif p2 == CHOICE.PAPER and p1 == CHOICE.ROCK:
+    if p2 == CHOICE.PAPER and p1 == CHOICE.ROCK:
         return RESULT.WIN + p2
-    elif p2 == CHOICE.SCISSORS and p1 == CHOICE.PAPER:
+    if p2 == CHOICE.SCISSORS and p1 == CHOICE.PAPER:
         return RESULT.WIN + p2
-    else:
-        return RESULT.LOSE + p2
+    return RESULT.LOSE + p2
 
 
 def set_game(player1, result):
