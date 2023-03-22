@@ -48,7 +48,7 @@ class Stacks:
         return "".join(stack[-1] for stack in self.stacks)
 
 
-def get_data(filename):
+def get_data(filename: str):
     with open(filename, "r", encoding="utf-8") as f:
         stacks, moves = f.read().split("\n\n")
         return stacks, moves.strip().split("\n")
