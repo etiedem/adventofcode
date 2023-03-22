@@ -35,17 +35,19 @@ def item_to_priority(item: str) -> int:
     return LOOKUP.index(item) + 1
 
 
-def get_data():
-    with open("day3.txt") as f:
+def get_data(filename):
+    with open(filename, "r", encoding="utf-8") as f:
         for line in f:
             yield RuckSack(line.strip())
 
 
 def main():
-    part1 = sum(item_to_priority(pri) for item in get_data() for pri in item.find_common())
+    part1 = sum(
+        item_to_priority(pri) for item in get_data("day3.txt") for pri in item.find_common()
+    )
     part2 = sum(
         item_to_priority(item)
-        for x, y, z in batched(get_data(), 3)
+        for x, y, z in batched(get_data("day3.txt"), 3)
         for item in x.full.intersection(y.full, z.full)
     )
     print(f"Part 1: {part1}")
