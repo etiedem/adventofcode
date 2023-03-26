@@ -57,10 +57,7 @@ class FileSystem:
             self.add_parent_size(node.parent, size)
 
     def __iter__(self):
-        for child in self.root.children:
-            yield child
-            if child.ntype == Type.DIR:
-                yield from self._iter_child(child)
+        yield from self._iter_child(self.root)
 
     def _iter_child(self, node):
         for child in node.children:
