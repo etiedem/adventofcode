@@ -75,10 +75,6 @@ fn main() {
     let mut count = data
         .iter()
         .flat_map(|x| x.search_fill(line))
-        .filter(|x| match x {
-            Position(_, 2_000_000) => true,
-            _ => false,
-        })
         .collect::<HashSet<Position>>()
         .len();
     count -= data
