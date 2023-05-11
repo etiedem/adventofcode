@@ -1,36 +1,54 @@
+use lazy_static::lazy_static;
+use regex::Regex;
 use std::fmt::Display;
 
 #[derive(Debug)]
 struct Ip {
-    left: String,
-    right: String,
-    net: String,
+    rest: Vec<String>,
+    net: Vec<String>,
 }
 
 impl Display for Ip {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "left:  {}\nright: {}\nnet:   {}",
-            self.left, self.right, self.net
-        )
+        write!(f, "rest:\n")?;
+        for r in &self.rest {
+            write!(f, "{}\n", r)?;
+        }
+        write!(f, "nets:\n")?;
+        for net in &self.net {
+            write!(f, "{}\n", net)?;
+        }
+        write!(f, "")
     }
 }
 
 impl From<&str> for Ip {
     fn from(input: &str) -> Self {
-        let (left, rest) = input.split_once('[').unwrap();
-        let (net, right) = rest.split_once(']').unwrap();
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r"\[(\w+)\]").unwrap();
+        }
+        let mut net = Vec::new();
+        for capture in RE.captures_iter(input) {
+            net.push(
+                capture
+                    .get(0)
+                    .unwrap()
+                    .as_str()
+                    .trim_matches('[')
+                    .trim_matches(']')
+                    .to_string(),
+            );
+        }
+        let rest = RE.split(input).map(String::from).collect();
         Ip {
-            left: left.to_string(),
-            right: right.to_string(),
-            net: net.to_string(),
+            rest: rest,
+            net: net,
         }
     }
 }
 
 impl Ip {
-    fn check(input: &str) -> bool {
+    fn check_abba(input: &str) -> bool {
         for item in input.chars().collect::<Vec<char>>().windows(4) {
             if item[0] == item[3] && item[1] == item[2] && item[0] != item[1] {
                 return true;
@@ -38,22 +56,66 @@ impl Ip {
         }
         false
     }
+    fn check_bab(input: &str, aba: &str) -> bool {
+        for item in input.chars().collect::<Vec<char>>().windows(3) {
+            if item[0] == aba.chars().nth(1).unwrap()
+                && item[1] == aba.chars().nth(0).unwrap()
+                && item[2] == aba.chars().nth(1).unwrap()
+            {
+                return true;
+            }
+        }
+        false
+    }
+    fn check_aba(input: &str) -> Vec<String> {
+        let mut result = Vec::new();
+        for item in input.chars().collect::<Vec<char>>().windows(3) {
+            if item[0] == item[2] && item[0] != item[1] {
+                result.push(item.iter().collect());
+            }
+        }
+        result
+    }
+
+    fn supports_ssl(&self) -> bool {
+        for rest in &self.rest {
+            for item in Ip::check_aba(rest) {
+                for net in &self.net {
+                    if Ip::check_bab(net, &item) {
+                        return true;
+                    }
+                }
+            }
+        }
+        false
+    }
 
     fn supports_tls(&self) -> bool {
-        if !Ip::check(&self.net) && (Ip::check(&self.left) || Ip::check(&self.right)) {
-            return true;
+        for net in &self.net {
+            if Ip::check_abba(net) {
+                return false;
+            }
+        }
+        for rest in &self.rest {
+            if Ip::check_abba(rest) {
+                return true;
+            }
         }
         false
     }
 }
 
-fn solve(input: &str) -> u32 {
-    input.lines().map(Ip::from).filter(Ip::supports_tls).count() as u32
+fn tls(input: &Vec<Ip>) -> u32 {
+    input.iter().filter(|x| x.supports_tls()).count() as u32
+}
+
+fn ssl(input: &Vec<Ip>) -> u32 {
+    input.iter().filter(|x| x.supports_ssl()).count() as u32
 }
 
 fn main() {
     let data = include_str!("input.txt").trim();
-    println!("Part 1: {}", solve(data));
+    let ip: Vec<_> = data.lines().map(Ip::from).collect();
+    println!("Part 1: {}", tls(&ip));
+    println!("Part 2: {}", ssl(&ip));
 }
-
-// 157 is too high
