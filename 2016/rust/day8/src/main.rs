@@ -105,10 +105,7 @@ fn main() {
     let data = include_str!("input.txt").trim();
     let instructions: Vec<_> = data.lines().map(Instr::parse).collect();
     let mut screen = Screen::new();
-    // instructions.into_iter().fold(screen, |mut screen, instr| {
-    //     screen.run_instr(&instr);
-    //     screen
-    // });
+
     for instr in instructions {
         screen.run_instr(&instr);
     }
