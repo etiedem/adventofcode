@@ -3,7 +3,6 @@
 import re
 from collections import Counter
 from operator import itemgetter
-from string import ascii_lowercase
 from typing import Any
 
 from rich import print
@@ -58,9 +57,10 @@ class Room:
 
     def __shift(self) -> str:
         result = []
+        offset = ord("a")
         for section in self.name:
             for letter in section:
-                result.append(ascii_lowercase[(ascii_lowercase.find(letter) + self.sector_id) % 26])
+                result.append(chr((((ord(letter) - offset) + self.sector_id) % 26) + offset))
             result.append(" ")
         return "".join(result)
 
@@ -80,4 +80,6 @@ def main():
     part2 = next(room.sector_id for room in rooms if "north" in room.real)
     print(f"Part2: {part2}")
 
+
+if __name__ == "__main__":
     main()
