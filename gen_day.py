@@ -32,6 +32,7 @@ def main(year: int, day: int):
     if not day_file.exists():
         with open(day_file, "w") as f:
             f.write(python_template.render(day=day_pad))
+        day_file.chmod(0o755)
     else:
         print("Day file already exists.")
 
