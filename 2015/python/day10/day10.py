@@ -18,38 +18,35 @@ def solve_re(data):
 
 
 def solve(data):
-    output = []
-    last, count = None, 1
+    output, last, count = [], data[0], 1
 
-    for x in data:
-        if last is None:
-            last = x
-            continue
-        if x != last:
-            output.extend([str(count), last])
-            count = 1
-            last = x
-        else:
+    for x in data[1:]:
+        if x == last:
             count += 1
+            continue
+
+        output.extend([str(count), last])
+        count = 1
+        last = x
 
     output.extend([str(count), x])
     return "".join(output)
 
 
+def run(data, steps):
+    for _ in range(steps):
+        data = solve(data)
+    return data, len(data)
+
+
 def main():
     data = get_data("day10.txt")
 
-    for _ in range(40):
-        data = solve(data)
-    p1 = len(data)
-
+    data, p1 = run(data, 40)
     print(f"Part 1: {p1}")
 
-    for _ in range(10):
-        data = solve(data)
-    p2 = len(data)
-
-    print(f"Part 2: {p2}")
+    _, p2 = run(data, 10)
+    print(f"Part 1: {p2}")
 
 
 if __name__ == "__main__":
