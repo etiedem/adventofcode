@@ -33,11 +33,9 @@ def parse(data):
 
 
 def calc_score(ingredients, amounts, calorie=False):
-    total_cap = 0
-    total_dur = 0
-    total_flav = 0
-    total_text = 0
-    total_cal = 0
+    total_cap, total_dur, total_flav = 0, 0, 0
+    total_text, total_cal = 0, 0
+    max_calories = 500
 
     for amount in amounts:
         name, num = amount
@@ -50,20 +48,20 @@ def calc_score(ingredients, amounts, calorie=False):
     if any(x < 1 for x in (total_cap, total_dur, total_flav, total_text)):
         return 0
 
-    if calorie and total_cal != 500:
+    if calorie and total_cal != max_calories:
         return 0
 
     return total_cap * total_dur * total_flav * total_text
 
 
-def find_best(ingredients, num, cal=False):
+def find_best(ingredients, num=100, cal=False):
     max_score = -1
     i = list(ingredients.keys())
     numbers = [range(num)] * len(i)
     for nums in itertools.product(*numbers):
         if sum(nums) != num:
             continue
-        score = calc_score(ingredients, zip(i, nums), cal)
+        score = calc_score(ingredients, zip(i, nums, strict=True), cal)
         max_score = max(score, max_score)
     return max_score
 
@@ -72,10 +70,10 @@ def main():
     data = get_data("day15.txt")
     ingredients = parse(data)
 
-    p1 = find_best(ingredients, 100)
+    p1 = find_best(ingredients)
     print(f"Part 1: {p1}")
 
-    p2 = find_best(ingredients, 100, True)
+    p2 = find_best(ingredients, cal=True)
     print(f"Part 2: {p2}")
 
 
