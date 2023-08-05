@@ -68,8 +68,8 @@ def main():
     data = get_data("day15.txt")
     ingredients = parse(data)
 
-    # p1 = find_best(ingredients)
-    # print(f"Part 1: {p1}")
+    p1 = find_best(ingredients)
+    print(f"Part 1: {p1}")
 
     p2 = find_best(ingredients, cal=True)
     print(f"Part 2: {p2}")
