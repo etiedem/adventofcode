@@ -57,8 +57,7 @@ def calc_score(ingredients, amounts, calorie=False):
 def find_best(ingredients, num=100, cal=False):
     max_score = -1
     i = list(ingredients.keys())
-    numbers = [range(num)] * len(i)
-    for nums in itertools.product(*numbers):
+    for nums in itertools.product(range(num), repeat=len(i)):
         if sum(nums) != num:
             continue
         score = calc_score(ingredients, zip(i, nums, strict=True), cal)
