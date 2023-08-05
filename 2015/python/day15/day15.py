@@ -59,8 +59,6 @@ def find_best(ingredients, num=100, cal=False):
     i = list(ingredients.keys())
     for nums in itertools.product(range(num), repeat=len(i) - 1):
         nums = [*nums, num - sum(nums)]
-        if sum(nums) != num:
-            continue
         score = calc_score(ingredients, zip(i, nums, strict=True), cal)
         max_score = max(score, max_score)
     return max_score
@@ -70,8 +68,8 @@ def main():
     data = get_data("day15.txt")
     ingredients = parse(data)
 
-    p1 = find_best(ingredients)
-    print(f"Part 1: {p1}")
+    # p1 = find_best(ingredients)
+    # print(f"Part 1: {p1}")
 
     p2 = find_best(ingredients, cal=True)
     print(f"Part 2: {p2}")
