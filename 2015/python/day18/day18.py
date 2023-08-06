@@ -50,11 +50,10 @@ class Grid:
     def _check_nei(self, x, y):
         neighbors = ((-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1))
         return sum(
-            1
+            self.grid[y + ny, x + nx]
             for nx, ny in neighbors
             if 0 <= y + ny < self.grid.shape[0]
             if 0 <= x + nx < self.grid.shape[1]
-            if self.grid[y + ny, x + nx] == 1
         )
 
 
