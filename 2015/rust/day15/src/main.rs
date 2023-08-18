@@ -1,7 +1,6 @@
 use itertools::{any, iproduct};
 use std::collections::HashMap;
 use std::iter::zip;
-use std::vec;
 
 struct Ingredient {
     name: String,
@@ -35,7 +34,7 @@ fn find_best(ingredient: &HashMap<String, Ingredient>, num: i32, cal: bool) -> i
         if num - new_num < 0 {
             continue;
         }
-        let new_num = vec![a, b, c, new_num];
+        let new_num = [a, b, c, new_num];
         let score = calc_score(ingredient, zip(i.clone(), new_num).collect(), cal);
         max_score = max_score.max(score);
     }
@@ -53,13 +52,14 @@ fn calc_score(
 
     for amount in amounts {
         let (name, num) = amount;
-        total_cap += ingredient.get(name).unwrap().capacity * num;
-        total_dur += ingredient.get(name).unwrap().durability * num;
-        total_flav += ingredient.get(name).unwrap().flavor * num;
-        total_text += ingredient.get(name).unwrap().texture * num;
-        total_cal += ingredient.get(name).unwrap().calories * num;
+        let i = ingredient.get(name).unwrap();
+        total_cap += i.capacity * num;
+        total_dur += i.durability * num;
+        total_flav += i.flavor * num;
+        total_text += i.texture * num;
+        total_cal += i.calories * num;
     }
-    let all = vec![total_cap, total_dur, total_flav, total_text];
+    let all = [total_cap, total_dur, total_flav, total_text];
     if any(all, |x| x < 1) {
         return 0;
     }
