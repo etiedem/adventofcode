@@ -5,11 +5,10 @@ fn parse(input: &str) -> Vec<HashMap<String, u16>> {
         .lines()
         .map(|line| {
             let line = line.replacen(':', ",", 1);
-            let line = line.replacen(' ', ":", 1);
-            let line = line.replace(' ', "");
-            line.split(',')
+            let line = line.replacen(' ', ": ", 1);
+            line.split(", ")
                 .map(|pair| {
-                    let (key, value) = pair.split_once(':').unwrap();
+                    let (key, value) = pair.split_once(": ").unwrap();
                     (key.to_string(), value.parse().unwrap())
                 })
                 .collect()
