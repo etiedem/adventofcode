@@ -48,7 +48,7 @@ fn part2(aunt: &HashMap<String, u16>, clue: &HashMap<String, u16>) -> bool {
 }
 fn main() {
     let data = include_str!("input.txt");
-    let aunts = parse(data);
+    let aunts = parse(data).into_iter();
     let aunt_clue = HashMap::from([
         ("children".to_owned(), 3),
         ("cats".to_owned(), 7),
@@ -63,14 +63,14 @@ fn main() {
     ]);
 
     let p1 = aunts
-        .iter()
+        .clone()
         .filter(|x| part1(x, &aunt_clue))
         .last()
         .unwrap();
     println!("Part 1: {:?}", p1.get("Sue").unwrap());
 
     let p2 = aunts
-        .iter()
+        .clone()
         .filter(|x| part2(x, &aunt_clue))
         .last()
         .unwrap();
