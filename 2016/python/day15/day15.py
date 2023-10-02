@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.11
 
+from copy import deepcopy
 from dataclasses import dataclass, field
 
 from rich import print
@@ -42,12 +43,13 @@ class Game:
 
 
 def find_answer(game):
-    game.set_zero()
+    ng = deepcopy(game)
+    ng.set_zero()
     while True:
-        if all((disk.cur_pos + idx) % disk.max_pos == 0 for idx, disk in enumerate(game.disks, 1)):
-            return game
+        if all((disk.cur_pos + idx) % disk.max_pos == 0 for idx, disk in enumerate(ng.disks, 1)):
+            return ng
 
-        game.tick()
+        ng.tick()
 
 
 def get_data(filename):
@@ -57,15 +59,14 @@ def get_data(filename):
 
 def main():
     data = get_data("day15.txt")
-
     game = Game.from_str(data)
-    p1 = find_answer(game)
-    print(f"Part 1: {p1.time}")
 
-    game = Game.from_str(data)
+    p1 = find_answer(game).time
+    print(f"Part 1: {p1}")
+
     game.disks.append(Disk(0, 11))
-    p2 = find_answer(game)
-    print(f"Part 2: {p2.time}")
+    p2 = find_answer(game).time
+    print(f"Part 2: {p2}")
 
 
 if __name__ == "__main__":
