@@ -107,16 +107,16 @@ def solve_shortest(maze_raw, data):
 def solve_longest(maze_raw, data):
     maze = Maze(maze_raw, data)
     start = State(maze.start, "")
-    queue = [(0, start)]
+    queue = [start]
     path_lengths = set()
     while queue:
-        _, current = heappop(queue)
+        current = heappop(queue)
         if current.pos == maze.end:
             path_lengths.add(current.pathlen)
             continue
         for dir, nei in maze.get_neigh(current.pos, current.path):
             candidate = State(nei, current.path + dir)
-            heappush(queue, (candidate.pathlen, candidate))
+            heappush(queue, candidate)
 
     return sorted(path_lengths)[-1]
 
