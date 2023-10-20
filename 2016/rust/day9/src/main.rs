@@ -30,7 +30,7 @@ fn decompress(input: &str, recurse: bool) -> usize {
             continue;
         } else if FLAG {
             capture.push(*data.get(idx as usize).unwrap());
-        } else if *data.get(idx as usize).unwrap() == '(' {
+        } else if *data.get(idx).unwrap() == '(' {
             FLAG = true;
         } else {
             length += 1;
