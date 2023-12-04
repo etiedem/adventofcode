@@ -11,8 +11,8 @@ class Card:
     id_: int
     points: int
     cards: int
-    win: list[int] = field(default_factory=list)
-    num: list[int] = field(default_factory=list)
+    win: set[int] = field(default_factory=set)
+    num: set[int] = field(default_factory=set)
 
     def __post_init__(self):
         self.cal_points()
@@ -23,19 +23,15 @@ class Card:
         _, name = name.split()
         sec1, sec2 = rest.split(" | ")
         return cls(
-            int(name), 0, 0, list(map(int, sec1.split())), list(map(int, sec2.split()))
+            int(name), 0, 0, set(map(int, sec1.split())), set(map(int, sec2.split()))
         )
 
     def cal_points(self):
-        count = 0
-        for n in self.win:
-            if n in self.num:
-                count += 1
-        self.cards = count
-        if count == 1:
+        self.cards = len(self.win & self.num)
+        if self.cards == 1:
             self.points = 1
-        elif count > 1:
-            self.points = 1 << count - 1
+        elif self.cards > 1:
+            self.points = 1 << self.cards - 1
         else:
             self.points = 0
 
