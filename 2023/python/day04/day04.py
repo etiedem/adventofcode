@@ -28,12 +28,7 @@ class Card:
 
     def cal_points(self):
         self.cards = len(self.win & self.num)
-        if self.cards == 1:
-            self.points = 1
-        elif self.cards > 1:
-            self.points = 1 << self.cards - 1
-        else:
-            self.points = 0
+        self.points = 2 ** (self.cards - 1) if self.cards > 0 else 0
 
 
 def get_data(filename):
