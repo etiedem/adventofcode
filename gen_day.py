@@ -11,15 +11,22 @@ BASE_DIR = pathlib.Path(__file__).parent
 
 def get_input(year: int, day: int) -> str:
     url = f"https://adventofcode.com/{year}/day/{day}/input"
-    cookie = httpx.Cookies({"session": (BASE_DIR / "session.txt").read_text().strip()})
-    return httpx.Client(cookies=cookie).get(url).text.strip()
+    session_file = BASE_DIR / "session.txt"
+    if session_file.exists():
+        cookie = httpx.Cookies(
+            {"session": (BASE_DIR / "session.txt").read_text().strip()}
+        )
+        return httpx.Client(cookies=cookie).get(url).text.strip()
+    raise FileExistsError(f"{session_file} doesn't exist")
 
 
 def create_input_file(args, day_pad, day_dir):
     input_file = day_dir / f"day{day_pad}.txt"
     if not input_file.exists():
+        data = get_input(args.year, args.day)
         with open(input_file, "w") as f:
-            f.write(get_input(args.year, args.day))
+            f.write(data)
+            print("Input file created.")
 
 
 def main(args):
