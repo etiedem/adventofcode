@@ -34,39 +34,33 @@ class Hand:
 
     def get_hand_type(self):
         count = Counter(c.card for c in self.cards)
+
+        if self.part2:
+            jokers = count.pop("J", 0)
+            if jokers == 5:
+                return HandType.FIVE_OF_A_KIND
+            most = count.most_common(1)[0][0]
+            count.update({most: jokers})
+
         if len(count) == 1:
             return HandType.FIVE_OF_A_KIND
-        elif self.part2 and "J" in count:
-            return self.jokers_wild(count)
-        elif len(count) == 2:
+
+        if len(count) == 2:
             if 2 in count.values():
                 return HandType.FULL_HOUSE
             else:
                 return HandType.FOUR_OF_A_KIND
-        elif len(count) == 3:
+
+        if len(count) == 3:
             if 3 in count.values():
                 return HandType.THREE_OF_A_KIND
             else:
                 return HandType.TWO_PAIR
-        elif len(count) == 4:
-            return HandType.PAIR
-        return HandType.HIGH_CARD
 
-    def jokers_wild(self, count: Counter):
-        if len(count) == 2:
-            return HandType.FIVE_OF_A_KIND
-        elif len(count) == 3:
-            if 3 in count.values():
-                return HandType.FOUR_OF_A_KIND
-            else:
-                if count["J"] == 2:
-                    return HandType.FOUR_OF_A_KIND
-                else:
-                    return HandType.FULL_HOUSE
-        elif len(count) == 4:
-            return HandType.THREE_OF_A_KIND
-        else:
+        if len(count) == 4:
             return HandType.PAIR
+
+        return HandType.HIGH_CARD
 
 
 def parse_card(card: str, part2: bool = False):
