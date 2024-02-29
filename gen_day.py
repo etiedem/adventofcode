@@ -38,19 +38,32 @@ def main(args):
     test_template = env.get_template("py_test_template.j2")
     year_dir = BASE_DIR / str(args.year) / "python"
     day_pad = f"{args.day:02d}"
-    command = ""
+    commands = []
 
     if args.rust:
         is_template = False
         is_command = True
         year_dir = BASE_DIR / str(args.year) / "rust"
-        command = f"cargo init day{day_pad}"
+        dir = year_dir
+        commands = [f"cargo init day{day_pad}"]
+
+    if args.go:
+        is_command = True
+        year_dir = BASE_DIR / str(args.year) / "go"
+        template = env.get_template("go_template.j2")
+        test_template = env.get_template("go_test_template.j2")
+        commands = [f"go mod init day{day_pad}", "go get github.com/stretchr/testify"]
 
     day_dir = year_dir / f"day{day_pad}"
+    dir = day_dir
     if not day_dir.exists():
         day_dir.mkdir(parents=True)
 
     day_file = day_dir / f"day{day_pad}.py"
+
+    if args.go:
+        day_file = day_dir / "main.go"
+
     if is_template:
         if not day_file.exists():
             with open(day_file, "w") as f:
@@ -60,6 +73,8 @@ def main(args):
             print("Day file already exists.")
 
     test_file = day_dir / f"test_day{day_pad}.py"
+    if args.go:
+        test_file = day_dir / "main_test.go"
     if is_template:
         if not test_file.exists():
             with open(test_file, "w") as f:
@@ -68,7 +83,8 @@ def main(args):
             print("Test file already exists.")
 
     if is_command:
-        subprocess.run(command, cwd=year_dir, shell=True, check=True)
+        for command in commands:
+            subprocess.run(command, cwd=dir, shell=True, check=False)
 
     create_input_file(args, day_pad, day_dir)
 
@@ -78,6 +94,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--rust", action="store_true")
+    parser.add_argument("--go", action="store_true")
     parser.add_argument("year", type=int)
     parser.add_argument("day", type=int)
 

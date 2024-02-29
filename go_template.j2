@@ -1,0 +1,22 @@
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func getData(filename string) []byte {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+	return data
+}
+
+func main() {
+	data := getData("day{{ day }}.txt")
+	fmt.Println(string(data))
+
+    fmt.Println("Part 1:")
+    fmt.Println("Part 2:")
+}

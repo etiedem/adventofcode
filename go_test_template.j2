@@ -1,0 +1,14 @@
+package main
+
+import (
+    "github.com/stretchr/testify/assert"
+    "testing"
+)
+
+func TestAnswer(t *testing.T) {
+    data := getData("example.txt")
+    if data == nil {
+        t.Fatalf("Data from file broken!")
+    }
+    //assert.Equal(t, )
+}
