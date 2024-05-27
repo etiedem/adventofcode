@@ -55,7 +55,10 @@ def main(args):
         commands = [f"go mod init day{day_pad}", "go get github.com/stretchr/testify"]
 
     day_dir = year_dir / f"day{day_pad}"
-    dir = day_dir
+
+    if not args.rust:
+        dir = day_dir
+
     if not day_dir.exists():
         day_dir.mkdir(parents=True)
 
@@ -76,7 +79,7 @@ def main(args):
     if args.go:
         test_file = day_dir / "main_test.go"
     if is_template:
-        if not test_file.exists():
+        if not est_file.exists():
             with open(test_file, "w") as f:
                 f.write(test_template.render(day=day_pad))
         else:
@@ -84,6 +87,7 @@ def main(args):
 
     if is_command:
         for command in commands:
+            print(dir)
             subprocess.run(command, cwd=dir, shell=True, check=False)
 
     create_input_file(args, day_pad, day_dir)
