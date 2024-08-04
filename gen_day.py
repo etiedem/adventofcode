@@ -79,7 +79,7 @@ def main(args):
     if args.go:
         test_file = day_dir / "main_test.go"
     if is_template:
-        if not est_file.exists():
+        if not test_file.exists():
             with open(test_file, "w") as f:
                 f.write(test_template.render(day=day_pad))
         else:
